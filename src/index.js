@@ -20,9 +20,15 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:5173",
+    "https://backend-cikf.onrender.com",
     "https://twoj-frontend.vercel.app"
-  ]
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
+
+app.options("*", cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -47,7 +53,6 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// ✅ PORT POD HOSTING
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server działa na porcie ${PORT}`);
