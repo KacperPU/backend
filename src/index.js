@@ -21,7 +21,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://backend-cikf.onrender.com",
-    "https://twoj-frontend.vercel.app"
+    "https://wizytowkizklasa.vercel.app"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
