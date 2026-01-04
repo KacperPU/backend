@@ -47,30 +47,51 @@ router.put("/me", auth, async (req, res) => {
   res.json(user);
 });
 
-// DELETE konto
+// DELETE – usuń konto
 router.delete("/me", auth, async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.id }
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
 
-  if (!user) {
-    return res.status(404).json({ error: "Użytkownik nie istnieje" });
-  }
+    if (!user) {
+      return res.status(404).json({ error: "Użytkownik nie istnieje" });
+    }
 
-  if (user.role === "ADMIN") {
-    return res.status(403).json({
-      error: "Nie można usunąć konta administratora"
+    if (user.role === "ADMIN") {
+      return res.status(403).json({
+        error: "Nie można usunąć konta administratora"
+      });
+    }
+    const orders = await prisma.order.findMany({
+      where: { userId: user.id },
+      select: { id: true }
+    });
+
+    const orderIds = orders.map(o => o.id);
+    if (orderIds.length > 0) {
+      await prisma.orderItem.deleteMany({
+        where: {
+          orderId: { in: orderIds }
+        }
+      });
+      await prisma.order.deleteMany({
+        where: {
+          id: { in: orderIds }
+        }
+      });
+    }
+    await prisma.user.delete({
+      where: { id: user.id }
+    });
+
+    res.json({ message: "Konto zostało usunięte" });
+  } catch (err) {
+    console.error("DELETE /user/me error:", err);
+    res.status(500).json({
+      error: "Błąd podczas usuwania konta"
     });
   }
-  await prisma.order.deleteMany({
-    where: { userId: user.id }
-  });
-
-  await prisma.user.delete({
-    where: { id: user.id }
-  });
-
-  res.json({ message: "Konto zostało usunięte" });
 });
 
 
