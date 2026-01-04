@@ -47,5 +47,31 @@ router.put("/me", auth, async (req, res) => {
   res.json(user);
 });
 
+// DELETE konto
+router.delete("/me", auth, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id }
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: "Użytkownik nie istnieje" });
+  }
+
+  if (user.role === "ADMIN") {
+    return res.status(403).json({
+      error: "Nie można usunąć konta administratora"
+    });
+  }
+  await prisma.order.deleteMany({
+    where: { userId: user.id }
+  });
+
+  await prisma.user.delete({
+    where: { id: user.id }
+  });
+
+  res.json({ message: "Konto zostało usunięte" });
+});
+
 
 export default router;
