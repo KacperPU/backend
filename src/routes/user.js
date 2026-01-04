@@ -11,8 +11,12 @@ router.get("/me", auth, async (req, res) => {
     where: { id: req.user.id },
     select: {
       email: true,
-      address: true,
-      role: true
+      role: true,
+      street: true,
+      houseNumber: true,
+      apartment: true,
+      postalCode: true,
+      city: true
     }
   });
 
@@ -21,14 +25,27 @@ router.get("/me", auth, async (req, res) => {
 
 // PUT – aktualizacja adresu
 router.put("/me", auth, async (req, res) => {
-  const { address } = req.body;
+  const {
+    street,
+    houseNumber,
+    apartment,
+    postalCode,
+    city
+  } = req.body;
 
   const user = await prisma.user.update({
     where: { id: req.user.id },
-    data: { address }
+    data: {
+      street,
+      houseNumber,
+      apartment,
+      postalCode,
+      city
+    }
   });
 
   res.json(user);
 });
+
 
 export default router;
