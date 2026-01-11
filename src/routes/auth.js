@@ -12,23 +12,23 @@ router.post("/register", async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        error: "Email i hasło są wymagane"
+        error: "Email i hasło są wymagane",
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
-        error: "Hasło musi mieć co najmniej 6 znaków"
+        error: "Hasło musi mieć co najmniej 6 znaków",
       });
     }
 
     const exists = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     });
 
     if (exists) {
       return res.status(409).json({
-        error: "Użytkownik o takim emailu już istnieje"
+        error: "Użytkownik o takim emailu już istnieje",
       });
     }
 
@@ -38,18 +38,18 @@ router.post("/register", async (req, res) => {
       data: {
         email,
         password: hashed,
-        role: "USER"
-      }
+        role: "USER",
+      },
     });
 
     res.status(201).json({
       id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     });
   } catch (err) {
     res.status(500).json({
-      error: "Błąd serwera"
+      error: "Błąd serwera",
     });
   }
 });
@@ -60,24 +60,24 @@ router.post("/login", async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        error: "Email i hasło są wymagane"
+        error: "Email i hasło są wymagane",
       });
     }
 
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     });
 
     if (!user) {
       return res.status(401).json({
-        error: "Nieprawidłowy email lub hasło"
+        error: "Nieprawidłowy email lub hasło",
       });
     }
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       return res.status(401).json({
-        error: "Nieprawidłowy email lub hasło"
+        error: "Nieprawidłowy email lub hasło",
       });
     }
 
@@ -89,11 +89,11 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token,
-      role: user.role
+      role: user.role,
     });
   } catch (err) {
     res.status(500).json({
-      error: "Błąd serwera"
+      error: "Błąd serwera",
     });
   }
 });

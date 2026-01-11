@@ -16,8 +16,8 @@ router.get("/me", auth, async (req, res) => {
       houseNumber: true,
       apartment: true,
       postalCode: true,
-      city: true
-    }
+      city: true,
+    },
   });
 
   res.json(user);
@@ -25,13 +25,7 @@ router.get("/me", auth, async (req, res) => {
 
 // PUT – aktualizacja adresu
 router.put("/me", auth, async (req, res) => {
-  const {
-    street,
-    houseNumber,
-    apartment,
-    postalCode,
-    city
-  } = req.body;
+  const { street, houseNumber, apartment, postalCode, city } = req.body;
 
   const user = await prisma.user.update({
     where: { id: req.user.id },
@@ -40,8 +34,8 @@ router.put("/me", auth, async (req, res) => {
       houseNumber,
       apartment,
       postalCode,
-      city
-    }
+      city,
+    },
   });
 
   res.json(user);
@@ -51,7 +45,7 @@ router.put("/me", auth, async (req, res) => {
 router.delete("/me", auth, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id }
+      where: { id: req.user.id },
     });
 
     if (!user) {
@@ -60,39 +54,38 @@ router.delete("/me", auth, async (req, res) => {
 
     if (user.role === "ADMIN") {
       return res.status(403).json({
-        error: "Nie można usunąć konta administratora"
+        error: "Nie można usunąć konta administratora",
       });
     }
     const orders = await prisma.order.findMany({
       where: { userId: user.id },
-      select: { id: true }
+      select: { id: true },
     });
 
-    const orderIds = orders.map(o => o.id);
+    const orderIds = orders.map((o) => o.id);
     if (orderIds.length > 0) {
       await prisma.orderItem.deleteMany({
         where: {
-          orderId: { in: orderIds }
-        }
+          orderId: { in: orderIds },
+        },
       });
       await prisma.order.deleteMany({
         where: {
-          id: { in: orderIds }
-        }
+          id: { in: orderIds },
+        },
       });
     }
     await prisma.user.delete({
-      where: { id: user.id }
+      where: { id: user.id },
     });
 
     res.json({ message: "Konto zostało usunięte" });
   } catch (err) {
     console.error("DELETE /user/me error:", err);
     res.status(500).json({
-      error: "Błąd podczas usuwania konta"
+      error: "Błąd podczas usuwania konta",
     });
   }
 });
-
 
 export default router;

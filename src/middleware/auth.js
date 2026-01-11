@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 
-
 export const auth = (req, res, next) => {
   const header = req.headers.authorization;
   if (!header) return res.sendStatus(401);

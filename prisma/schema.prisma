@@ -20,11 +20,14 @@ model User {
   city         String?
 
   orders       Order[]
+  cart         Cart?
 }
 
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
+  active   Boolean   @default(true)
+
   products Product[]
 }
 
@@ -32,11 +35,15 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String
+  createdAt   DateTime @default(now())
   price       Float
   categoryId  Int
+  image       String?
+  active      Boolean  @default(true)
 
   category   Category    @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
+  cartItems   CartItem[]
 }
 
 enum Role {
@@ -45,15 +52,24 @@ enum Role {
 }
 
 model Order {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  address   String
-  total     Float
-  status    OrderStatus @default(NOWE)
-  createdAt DateTime    @default(now())
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  address        String
 
-  user      User        @relation(fields: [userId], references: [id])
-  items     OrderItem[]
+  deliveryOptionId Int
+  deliveryOption   DeliveryOption @relation(fields: [deliveryOptionId], references: [id])
+  deliveryPrice    Float
+
+  paymentMethodId Int
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  paymentStatus   PaymentStatus @default(PENDING)
+
+  total          Float
+  status         OrderStatus   @default(NOWE)
+  createdAt      DateTime      @default(now())
+
+  user           User          @relation(fields: [userId], references: [id])
+  items          OrderItem[]
 }
 
 model OrderItem {
@@ -61,6 +77,7 @@ model OrderItem {
   orderId   Int
   productId Int
   price     Float
+  quantity  Int     @default(1)
 
   order     Order   @relation(fields: [orderId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
@@ -73,3 +90,55 @@ enum OrderStatus {
   SKONCZONE
   ANULOWANE
 }
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId   Int
+  productId Int
+  quantity Int     @default(1)
+
+  cart     Cart    @relation(fields: [cartId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+enum DeliveryMethod {
+  KURIER
+  PACZKOMAT
+  ODBIOR_OSOBISTY
+}
+
+model DeliveryOption {
+  id        Int     @id @default(autoincrement())
+  code      String  @unique
+  name      String
+  price     Float
+  active    Boolean @default(true)
+
+  orders    Order[]
+}
+
+model PaymentMethod {
+  id        Int     @id @default(autoincrement())
+  code      String  @unique
+  name      String
+  active    Boolean @default(true)
+
+  orders    Order[]
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
